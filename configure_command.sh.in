@@ -16,7 +16,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/configure \
     --prefix=${CMAKE_CURRENT_BINARY_DIR}/out \
     --without-glib \
     --enable-static \
-    --disable-shared \
     --disable-stun \
     --disable-nth \
     --with-openssl

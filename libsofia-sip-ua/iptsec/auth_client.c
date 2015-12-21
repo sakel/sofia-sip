@@ -418,7 +418,12 @@ int ca_credentials(auth_client_t *ca,
   if (!ca || !ca->ca_scheme || !ca->ca_realm)
     return -1;
 
-  save = AUTH_CLIENT_SAVE_CREDENTIALS(ca);
+save = ((ca)->ca_auc && 
+(ca)->ca_auc->auc_plugin_size > 
+(int)offsetof(auth_client_plugin_t, auc_save_credentials) ? 
+(ca)->ca_auc->auc_save_credentials : NULL);
+
+//  save = AUTH_CLIENT_SAVE_CREDENTIALS(ca);
 
   if (save)
     return (*save)(ca, scheme, realm, user, pass);
@@ -1037,8 +1042,7 @@ int auc_digest_authorization(auth_client_t *ca,
   char *uri;
 
   msg_header_t *h;
-  char const *ha1;
-  auth_hexmd5_t sessionkey, response;
+  auth_hexmd5_t ha1, response;
   auth_response_t ar[1] = {{ 0 }};
   char ncount[17];
 
@@ -1048,7 +1052,7 @@ int auc_digest_authorization(auth_client_t *ca,
   if (!su_casenmatch(pass, "HA1+", 4))
     return 0;
 
-  ha1 = pass + 4;
+  pass = pass + 4;
 
   ar->ar_size = sizeof(ar);
   ar->ar_username = user;
@@ -1078,11 +1082,12 @@ int auc_digest_authorization(auth_client_t *ca,
 
   if (ar->ar_md5sess) {
     ar->ar_algorithm = "MD5-sess";
-    auth_digest_a1sess(ar, sessionkey, ha1);
-    ha1 = sessionkey;
+    auth_digest_a1sess(ar, ha1, pass);
   }
   else {
     ar->ar_algorithm = "MD5";
+    SU_DEBUG_5(("A1 = MD5(%s:%s:%s)\n", user, ac->ac_realm, pass));
+    auth_digest_ha1(ha1, user, ac->ac_realm, pass);
   }
 
   auth_digest_response(ar, response, ha1, method, data, dlen);

@@ -6,9 +6,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 include(ExternalProject)
 
-include(cmake/PlatformSettings.cmake)
-include(cmake/ConfigureArtifactPath.cmake)
-include(cmake/CommonCompilerFlags.cmake)
+#include(cmake/PlatformSettings.cmake)
+#include(cmake/ConfigureArtifactPath.cmake)
+#include(cmake/CommonCompilerFlags.cmake)
 
 message(STATUS ${OPENSSL_ROOT_DIR})
 find_package(OpenSSL)
@@ -25,12 +25,17 @@ if (UNIX)
     message(STATUS CMAKE_MODULE_LINKER_FLAGS=${CMAKE_MODULE_LINKER_FLAGS})
 
     # Reomve our strict compilation rules
-    string(REGEX REPLACE "-Werror" "" SOFIA_SIP_CFLAGS ${CMAKE_C_FLAGS})
-    string(REGEX REPLACE "-Wall" "" SOFIA_SIP_CFLAGS ${SOFIA_SIP_CFLAGS})
-    string(REGEX REPLACE "-Wextra" "" SOFIA_SIP_CFLAGS ${SOFIA_SIP_CFLAGS})
+    
+    string(REGEX REPLACE "-Werror" "" SOFIA_SIP_CFLAGS "" ${CMAKE_C_FLAGS})
+    string(REGEX REPLACE "-Wall" "" SOFIA_SIP_CFLAGS "" ${SOFIA_SIP_CFLAGS})
+    string(REGEX REPLACE "-Wextra" "" SOFIA_SIP_CFLAGS "" ${SOFIA_SIP_CFLAGS})
 
     message(STATUS SOFIA_SIP_CFLAGS=${SOFIA_SIP_CFLAGS})
-
+    message(STATUS PLATFORM=${PLATFORM})
+    if(DEFINED PLATFORM)
+    else()
+      set(PLATFORM "Linux")
+    endif()
     if (${PLATFORM} STREQUAL "Android")
         set(SOFIA_SIP_TARGET_PLATFORM "arm-android-linux")
         foreach(includeDir ${ANDROID_SYSTEM_INCLUDE_DIRS})
